@@ -3,13 +3,13 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
-// @author       Your Name
+// @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
 // @match        *://*.bilibili.com/bangumi/play/*
 // @grant        none
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     // Configuration and State
@@ -28,7 +28,7 @@
      * Core Features Implementation
      */
     const Features = {
-        playTick: function(isFinal = false) {
+        playTick: function (isFinal = false) {
             if (!state.soundEnabled) return;
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -40,7 +40,7 @@
 
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(isFinal ? 880 : 440, audioCtx.currentTime); // A5 or A4
-                
+
                 gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
 
@@ -51,17 +51,17 @@
             }
         },
 
-        formatTime: function(seconds) {
+        formatTime: function (seconds) {
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = Math.floor(seconds % 60);
-            return h > 0 ? 
-                `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : 
+            return h > 0 ?
+                `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` :
                 `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         },
 
         // 1. Loop specified segment
-        handleLoop: function() {
+        handleLoop: function () {
             if (state.loopActive && state.video) {
                 if (state.video.currentTime >= state.endTime) {
                     state.video.currentTime = state.startTime;
@@ -70,7 +70,7 @@
         },
 
         // 2. Change playback speed
-        setPlaybackSpeed: function(speed) {
+        setPlaybackSpeed: function (speed) {
             if (state.video) {
                 const newSpeed = Math.min(1.0, Math.max(0.5, parseFloat(speed.toFixed(1))));
                 state.video.playbackRate = newSpeed;
@@ -81,7 +81,7 @@
         },
 
         // 3. Count down before play
-        startCountdown: function() {
+        startCountdown: function () {
             if (state.isCountingDown || !state.video) return;
 
             state.isCountingDown = true;
@@ -114,10 +114,10 @@
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 border: 1px solid rgba(255, 255, 255, 0.2);
             `;
-            
-            const playerArea = document.querySelector('.bpx-player-video-area') || 
-                              document.querySelector('.bpx-player-container') || 
-                              document.querySelector('#bilibili-player');
+
+            const playerArea = document.querySelector('.bpx-player-video-area') ||
+                document.querySelector('.bpx-player-container') ||
+                document.querySelector('#bilibili-player');
             if (playerArea) playerArea.appendChild(overlay);
 
             let remaining = state.countdownSeconds;
@@ -196,10 +196,10 @@
         `;
 
         // Append to the video area to ensure visibility in fullscreen
-        const playerArea = document.querySelector('.bpx-player-video-area') || 
-                          document.querySelector('.bpx-player-container') || 
-                          document.querySelector('#bilibili-player');
-        
+        const playerArea = document.querySelector('.bpx-player-video-area') ||
+            document.querySelector('.bpx-player-container') ||
+            document.querySelector('#bilibili-player');
+
         if (playerArea) {
             playerArea.appendChild(container);
         }
@@ -257,11 +257,11 @@
      */
     function init() {
         state.video = document.querySelector('video');
-        
+
         if (state.video) {
             console.log('Bilibili Guitar Helper: Video element found.');
             injectUI();
-            
+
             // Monitor video time for looping
             state.video.addEventListener('timeupdate', Features.handleLoop);
 
@@ -270,7 +270,7 @@
                 // Ignore if user is typing in an input field
                 if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-                switch(e.key) {
+                switch (e.key) {
                     case 'i':
                     case 'I':
                         document.getElementById('gh-loop-start').click();
