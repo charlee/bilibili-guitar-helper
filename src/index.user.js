@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.9
+// @version      1.0
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -26,7 +26,9 @@
         isCountingDown: false,
         soundEnabled: true,
         isInternalPlay: false,
-        isMinimized: localStorage.getItem('gh-minimized') === 'true'
+        isMinimized: localStorage.getItem('gh-minimized') === 'true',
+        left: localStorage.getItem('gh-left'),
+        top: localStorage.getItem('gh-top')
     };
 
     /**
@@ -186,10 +188,15 @@
 
         const container = document.createElement('div');
         container.id = 'guitar-helper-ui';
+        
+        // Initial positioning
+        const initialPos = state.left && state.top ? 
+            `left: ${state.left}; top: ${state.top}; right: auto;` : 
+            `top: 20px; right: 20px;`;
+
         container.style.cssText = `
             position: absolute;
-            top: 20px;
-            right: 20px;
+            ${initialPos}
             display: flex;
             flex-direction: column;
             padding: 10px;
@@ -282,6 +289,10 @@
                 document.onmousemove = null;
                 document.onmouseup = null;
                 container.style.transition = 'opacity 0.3s ease, backdrop-filter 0.3s ease, width 0.3s ease';
+                
+                // Save final position
+                localStorage.setItem('gh-left', container.style.left);
+                localStorage.setItem('gh-top', container.style.top);
             };
         };
 
