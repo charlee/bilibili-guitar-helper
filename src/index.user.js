@@ -22,14 +22,17 @@
         endTime: 0,
         playbackSpeed: 1.0,
         countdownSeconds: 3,
+        countdownEnabled: false, // New toggle state
         isCountingDown: false,
-        soundEnabled: true
+        soundEnabled: true,
+        isInternalPlay: false // To prevent infinite loops
     };
 
     /**
      * Core Features Implementation
      */
     const Features = {
+        // ... (playTick and formatTime remain the same)
         playTick: function (isFinal = false) {
             if (!state.soundEnabled) return;
             try {
@@ -67,6 +70,10 @@
             if (state.loopActive && state.video) {
                 if (state.video.currentTime >= state.endTime) {
                     state.video.currentTime = state.startTime;
+                    // Trigger countdown on loop if enabled
+                    if (state.countdownEnabled) {
+                        Features.startCountdown(true);
+                    }
                 }
             }
         },
@@ -83,14 +90,16 @@
         },
 
         // 3. Count down before play
-        startCountdown: function () {
+        startCountdown: function (fromLoop = false) {
             if (state.isCountingDown || !state.video) return;
 
             state.isCountingDown = true;
             state.video.pause();
 
-            // Seek to start point if it exists, otherwise to 0
-            state.video.currentTime = state.startTime || 0;
+            // Only seek if we are starting fresh (not already at the loop start from handleLoop)
+            if (!fromLoop) {
+                state.video.currentTime = state.startTime || 0;
+            }
 
             // Create countdown overlay
             const overlay = document.createElement('div');
@@ -133,6 +142,8 @@
                     state.isCountingDown = false;
                     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
                     Features.playTick(true);
+                    
+                    state.isInternalPlay = true;
                     state.video.play();
                 } else {
                     overlay.innerText = remaining;
@@ -192,7 +203,7 @@
                 <span>Countdown:</span>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
-                    <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Start</button>
+                    <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
                 </div>
             </div>
         `;
@@ -235,7 +246,10 @@
         };
 
         document.getElementById('gh-countdown-btn').onclick = () => {
-            Features.startCountdown();
+            state.countdownEnabled = !state.countdownEnabled;
+            const btn = document.getElementById('gh-countdown-btn');
+            btn.innerText = state.countdownEnabled ? 'On' : 'Off';
+            btn.style.background = state.countdownEnabled ? '#fb7299' : '#00a1d6';
         };
 
         document.getElementById('gh-sound-toggle').onclick = () => {
@@ -266,6 +280,17 @@
 
             // Monitor video time for looping
             state.video.addEventListener('timeupdate', Features.handleLoop);
+
+            // Trigger countdown on manual play if enabled
+            state.video.addEventListener('play', () => {
+                if (state.countdownEnabled && !state.isCountingDown) {
+                    if (state.isInternalPlay) {
+                        state.isInternalPlay = false;
+                        return;
+                    }
+                    Features.startCountdown();
+                }
+            });
 
             // Add Keyboard Shortcuts (using capture phase to override Bilibili defaults)
             window.addEventListener('keydown', (e) => {

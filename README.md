@@ -9,12 +9,10 @@ A powerful userscript for Bilibili designed to assist guitarists and musicians i
 - Visual feedback with emerald green buttons and formatted timestamps (`MM:SS`).
 - Toggle looping on/off instantly.
 
-### ⏳ Preparation Countdown
-- **3-second countdown** before the video starts.
-- Automatically **seeks to the loop start point** (or video start) before counting down.
-- **Apple-style UI**: A large, blurred-background overlay in the center of the video.
-- **Audio Feedback**: Programmatic "tick" sounds with a higher-pitched "go" beep.
-- **Sound Toggle**: Easily mute/unmute the countdown sound from the UI.
+### ⏳ Persistent Countdown Toggle
+- **Toggle Mode**: Use `c` or the UI button to toggle the countdown feature on/off.
+- **Auto-Trigger**: If enabled, the countdown triggers **every time** the video starts/resumes (e.g., pressing Space) or **loops back** to the start point.
+- **Auto-Seek**: Automatically **seeks to the loop start point** (or video start) before starting the countdown.
 
 ### 🐌 Precise Playback Speed
 - Adjust speed from **0.5x to 1.0x** in fine-grained **0.1 increments**.
