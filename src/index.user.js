@@ -267,18 +267,23 @@
             // Monitor video time for looping
             state.video.addEventListener('timeupdate', Features.handleLoop);
 
-            // Add Keyboard Shortcuts
+            // Add Keyboard Shortcuts (using capture phase to override Bilibili defaults)
             window.addEventListener('keydown', (e) => {
                 // Ignore if user is typing in an input field
-                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+                if (['INPUT', 'TEXTAREA', 'IFRAME'].includes(document.activeElement.tagName) || 
+                    document.activeElement.isContentEditable) return;
+
+                const handledKeys = ['[', ']', 'l', 'L', 'c', 'C', '-', '=', '+'];
+                if (handledKeys.includes(e.key)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
 
                 switch (e.key) {
-                    case 'i':
-                    case 'I':
+                    case '[':
                         document.getElementById('gh-loop-start').click();
                         break;
-                    case 'o':
-                    case 'O':
+                    case ']':
                         document.getElementById('gh-loop-end').click();
                         break;
                     case 'l':
@@ -297,7 +302,7 @@
                         document.getElementById('gh-speed-up').click();
                         break;
                 }
-            });
+            }, true); // 'true' enables the capture phase
         } else {
             // Retry if video isn't ready yet (common in SPAs)
             setTimeout(init, 1000);

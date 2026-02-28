@@ -30,8 +30,8 @@ A powerful userscript for Bilibili designed to assist guitarists and musicians i
 
 | Action | Key |
 | :--- | :--- |
-| **Set Loop Start** | `i` |
-| **Set Loop End** | `o` |
+| **Set Loop Start** | `[` |
+| **Set Loop End** | `]` |
 | **Toggle Loop** | `l` |
 | **Start Countdown** | `c` |
 | **Speed Down** | `-` |
