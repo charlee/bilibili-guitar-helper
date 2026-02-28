@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.2
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
-// @author       Your Name
+// @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
 // @match        *://*.bilibili.com/bangumi/play/*
 // @updateURL    https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js
