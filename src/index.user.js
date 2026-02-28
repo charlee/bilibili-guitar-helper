@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -203,13 +203,14 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             width: ${state.isMinimized ? 'auto' : '240px'};
             opacity: ${state.isMinimized ? '0.1' : '1'};
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease, backdrop-filter 0.3s ease, width 0.3s ease;
+            user-select: none;
         `;
 
         container.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${state.isMinimized ? '0' : '5px'}; border-bottom: ${state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)'}; padding-bottom: ${state.isMinimized ? '0' : '5px'}; gap: 10px;">
-                <span style="font-weight: bold; white-space: nowrap;">🎸 <span id="gh-title-text" style="display: ${state.isMinimized ? 'none' : 'inline'};">Guitar Helper</span></span>
-                <button id="gh-minimize-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 5px;">${state.isMinimized ? '+' : '−'}</button>
+            <div id="gh-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${state.isMinimized ? '0' : '5px'}; border-bottom: ${state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)'}; padding-bottom: ${state.isMinimized ? '0' : '5px'}; gap: 10px; cursor: move;">
+                <span style="font-weight: bold; white-space: nowrap; pointer-events: none;">🎸 <span id="gh-title-text" style="display: ${state.isMinimized ? 'none' : 'inline'};">Guitar Helper</span></span>
+                <button id="gh-minimize-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 5px; pointer-events: auto;">${state.isMinimized ? '+' : '−'}</button>
             </div>
             <div id="gh-ui-content" style="display: ${state.isMinimized ? 'none' : 'flex'}; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
@@ -250,6 +251,40 @@
         }
 
         // Basic Event Listeners
+        const header = document.getElementById('gh-header');
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        header.onmousedown = (e) => {
+            if (e.target.id === 'gh-minimize-btn' || state.isMinimized) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            const rect = container.getBoundingClientRect();
+            const parentRect = container.parentElement.getBoundingClientRect();
+            initialLeft = rect.left - parentRect.left;
+            initialTop = rect.top - parentRect.top;
+            
+            container.style.transition = 'none'; // Disable transition while dragging
+            
+            document.onmousemove = (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                container.style.left = `${initialLeft + dx}px`;
+                container.style.top = `${initialTop + dy}px`;
+                container.style.right = 'auto'; // Break the initial 'right' anchor
+            };
+            
+            document.onmouseup = () => {
+                isDragging = false;
+                document.onmousemove = null;
+                document.onmouseup = null;
+                container.style.transition = 'opacity 0.3s ease, backdrop-filter 0.3s ease, width 0.3s ease';
+            };
+        };
+
         container.onmouseenter = () => {
             if (state.isMinimized) {
                 container.style.opacity = '1';
