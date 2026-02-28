@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -22,17 +22,35 @@
         endTime: null,
         playbackSpeed: 1.0,
         countdownSeconds: 3,
-        countdownEnabled: false, // New toggle state
+        countdownEnabled: false,
         isCountingDown: false,
         soundEnabled: true,
-        isInternalPlay: false // To prevent infinite loops
+        isInternalPlay: false,
+        isMinimized: localStorage.getItem('gh-minimized') === 'true'
     };
 
     /**
      * Core Features Implementation
      */
     const Features = {
-        // ... (playTick and formatTime remain the same)
+        toggleMinimize: function () {
+            state.isMinimized = !state.isMinimized;
+            localStorage.setItem('gh-minimized', state.isMinimized);
+            const container = document.getElementById('guitar-helper-ui');
+            const content = document.getElementById('gh-ui-content');
+            const toggleBtn = document.getElementById('gh-minimize-btn');
+            
+            if (state.isMinimized) {
+                content.style.display = 'none';
+                toggleBtn.innerText = '+';
+                container.style.width = 'auto';
+            } else {
+                content.style.display = 'flex';
+                toggleBtn.innerText = '−';
+                container.style.width = '240px';
+            }
+        },
+
         playTick: function (isFinal = false) {
             if (!state.soundEnabled) return;
             try {
@@ -167,7 +185,6 @@
             right: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
             padding: 10px;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
@@ -177,33 +194,40 @@
             z-index: 999999;
             pointer-events: auto;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            width: ${state.isMinimized ? 'auto' : '240px'};
+            transition: width 0.2s ease;
         `;
 
         container.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">🎸 Guitar Helper</div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <span><u>L</u>oop:</span>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <button id="gh-loop-start" title="Set Loop Start" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">[</button>
-                    <span id="gh-start-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
-                    <button id="gh-loop-end" title="Set Loop End" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">]</button>
-                    <span id="gh-end-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
-                    <button id="gh-loop-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
-                </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${state.isMinimized ? '0' : '5px'}; border-bottom: ${state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)'}; padding-bottom: ${state.isMinimized ? '0' : '5px'}; gap: 10px;">
+                <span style="font-weight: bold; white-space: nowrap;">🎸 Guitar Helper</span>
+                <button id="gh-minimize-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 5px;">${state.isMinimized ? '+' : '−'}</button>
             </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <span>Speed:</span>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <button id="gh-speed-down" title="Speed Down" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">-</button>
-                    <span id="gh-speed-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">1.0x</span>
-                    <button id="gh-speed-up" title="Speed Up" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">+</button>
+            <div id="gh-ui-content" style="display: ${state.isMinimized ? 'none' : 'flex'}; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <span><u>L</u>oop:</span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <button id="gh-loop-start" title="Set Loop Start" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">[</button>
+                        <span id="gh-start-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
+                        <button id="gh-loop-end" title="Set Loop End" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">]</button>
+                        <span id="gh-end-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
+                        <button id="gh-loop-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
+                    </div>
                 </div>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <span><u>C</u>ountdown:</span>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
-                    <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <span>Speed:</span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <button id="gh-speed-down" title="Speed Down" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">-</button>
+                        <span id="gh-speed-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">1.0x</span>
+                        <button id="gh-speed-up" title="Speed Up" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">+</button>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <span><u>C</u>ountdown:</span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
+                        <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -218,6 +242,20 @@
         }
 
         // Basic Event Listeners
+        document.getElementById('gh-minimize-btn').onclick = () => {
+            Features.toggleMinimize();
+            const header = document.getElementById('gh-minimize-btn').parentElement;
+            if (state.isMinimized) {
+                header.style.marginBottom = '0';
+                header.style.borderBottom = 'none';
+                header.style.paddingBottom = '0';
+            } else {
+                header.style.marginBottom = '5px';
+                header.style.borderBottom = '1px solid rgba(255,255,255,0.3)';
+                header.style.paddingBottom = '5px';
+            }
+        };
+
         document.getElementById('gh-loop-start').onclick = () => {
             if (state.video) {
                 state.startTime = state.video.currentTime;
