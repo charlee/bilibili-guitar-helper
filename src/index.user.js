@@ -20,13 +20,37 @@
         endTime: 0,
         playbackSpeed: 1.0,
         countdownSeconds: 3,
-        isCountingDown: false
+        isCountingDown: false,
+        soundEnabled: true
     };
 
     /**
      * Core Features Implementation
      */
     const Features = {
+        playTick: function(isFinal = false) {
+            if (!state.soundEnabled) return;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(isFinal ? 880 : 440, audioCtx.currentTime); // A5 or A4
+                
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {
+                console.error('Failed to play countdown sound:', e);
+            }
+        },
+
         formatTime: function(seconds) {
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
@@ -98,6 +122,7 @@
 
             let remaining = state.countdownSeconds;
             overlay.innerText = remaining;
+            Features.playTick();
 
             const interval = setInterval(() => {
                 remaining--;
@@ -105,9 +130,11 @@
                     clearInterval(interval);
                     state.isCountingDown = false;
                     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                    Features.playTick(true);
                     state.video.play();
                 } else {
                     overlay.innerText = remaining;
+                    Features.playTick();
                 }
             }, 1000);
         }
@@ -161,7 +188,10 @@
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <span>Countdown:</span>
-                <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Start</button>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
+                    <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Start</button>
+                </div>
             </div>
         `;
 
@@ -204,6 +234,13 @@
 
         document.getElementById('gh-countdown-btn').onclick = () => {
             Features.startCountdown();
+        };
+
+        document.getElementById('gh-sound-toggle').onclick = () => {
+            state.soundEnabled = !state.soundEnabled;
+            const btn = document.getElementById('gh-sound-toggle');
+            btn.innerText = state.soundEnabled ? '🔊' : '🔇';
+            btn.style.background = state.soundEnabled ? '#50c878' : '#444';
         };
 
         document.getElementById('gh-speed-down').onclick = () => {
