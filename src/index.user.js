@@ -216,6 +216,36 @@
             
             // Monitor video time for looping
             state.video.addEventListener('timeupdate', Features.handleLoop);
+
+            // Add Keyboard Shortcuts
+            window.addEventListener('keydown', (e) => {
+                // Ignore if user is typing in an input field
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+                switch(e.key) {
+                    case '[':
+                        document.getElementById('gh-loop-start').click();
+                        break;
+                    case ']':
+                        document.getElementById('gh-loop-end').click();
+                        break;
+                    case 'l':
+                    case 'L':
+                        document.getElementById('gh-loop-btn').click();
+                        break;
+                    case 'c':
+                    case 'C':
+                        document.getElementById('gh-countdown-btn').click();
+                        break;
+                    case '-':
+                        document.getElementById('gh-speed-down').click();
+                        break;
+                    case '=':
+                    case '+':
+                        document.getElementById('gh-speed-up').click();
+                        break;
+                }
+            });
         } else {
             // Retry if video isn't ready yet (common in SPAs)
             setTimeout(init, 1000);
