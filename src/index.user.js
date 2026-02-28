@@ -60,18 +60,40 @@
             state.isCountingDown = true;
             state.video.pause();
 
+            // Create countdown overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'gh-countdown-overlay';
+            overlay.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 120px;
+                font-weight: bold;
+                color: white;
+                text-shadow: 0 0 20px rgba(0,0,0,0.8);
+                z-index: 1000000;
+                pointer-events: none;
+                font-family: Arial, sans-serif;
+            `;
+            
+            const playerArea = document.querySelector('.bpx-player-video-area') || 
+                              document.querySelector('.bpx-player-container') || 
+                              document.querySelector('#bilibili-player');
+            if (playerArea) playerArea.appendChild(overlay);
+
             let remaining = state.countdownSeconds;
-            console.log(`Starting countdown: ${remaining}...`);
+            overlay.innerText = remaining;
 
             const interval = setInterval(() => {
                 remaining--;
                 if (remaining <= 0) {
                     clearInterval(interval);
                     state.isCountingDown = false;
+                    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
                     state.video.play();
-                    console.log("Play!");
                 } else {
-                    console.log(`Countdown: ${remaining}...`);
+                    overlay.innerText = remaining;
                 }
             }, 1000);
         }
