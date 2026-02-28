@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -27,7 +27,7 @@
         soundEnabled: true,
         isInternalPlay: false,
         isMinimized: localStorage.getItem('gh-minimized') === 'true',
-        left: localStorage.getItem('gh-left'),
+        right: localStorage.getItem('gh-right'),
         top: localStorage.getItem('gh-top')
     };
 
@@ -189,9 +189,9 @@
         const container = document.createElement('div');
         container.id = 'guitar-helper-ui';
         
-        // Initial positioning
-        const initialPos = state.left && state.top ? 
-            `left: ${state.left}; top: ${state.top}; right: auto;` : 
+        // Initial positioning (using right-anchor for better minimize behavior)
+        const initialPos = state.right && state.top ? 
+            `right: ${state.right}; top: ${state.top}; left: auto;` : 
             `top: 20px; right: 20px;`;
 
         container.style.cssText = `
@@ -260,7 +260,7 @@
         // Basic Event Listeners
         const header = document.getElementById('gh-header');
         let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
+        let startX, startY, initialRight, initialTop;
 
         header.onmousedown = (e) => {
             if (e.target.id === 'gh-minimize-btn' || state.isMinimized) return;
@@ -270,7 +270,7 @@
             
             const rect = container.getBoundingClientRect();
             const parentRect = container.parentElement.getBoundingClientRect();
-            initialLeft = rect.left - parentRect.left;
+            initialRight = parentRect.right - rect.right;
             initialTop = rect.top - parentRect.top;
             
             container.style.transition = 'none'; // Disable transition while dragging
@@ -279,9 +279,9 @@
                 if (!isDragging) return;
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                container.style.left = `${initialLeft + dx}px`;
+                container.style.right = `${initialRight - dx}px`;
                 container.style.top = `${initialTop + dy}px`;
-                container.style.right = 'auto'; // Break the initial 'right' anchor
+                container.style.left = 'auto'; 
             };
             
             document.onmouseup = () => {
@@ -291,7 +291,7 @@
                 container.style.transition = 'opacity 0.3s ease, backdrop-filter 0.3s ease, width 0.3s ease';
                 
                 // Save final position
-                localStorage.setItem('gh-left', container.style.left);
+                localStorage.setItem('gh-right', container.style.right);
                 localStorage.setItem('gh-top', container.style.top);
             };
         };
