@@ -63,6 +63,9 @@
             state.isCountingDown = true;
             state.video.pause();
 
+            // Seek to start point if it exists, otherwise to 0
+            state.video.currentTime = state.startTime || 0;
+
             // Create countdown overlay
             const overlay = document.createElement('div');
             overlay.id = 'gh-countdown-overlay';
@@ -71,13 +74,21 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                font-size: 120px;
+                width: 200px;
+                height: 200px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(10px);
+                border-radius: 40px;
+                font-size: 140px;
                 font-weight: bold;
                 color: white;
-                text-shadow: 0 0 20px rgba(0,0,0,0.8);
                 z-index: 1000000;
                 pointer-events: none;
-                font-family: Arial, sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                border: 1px solid rgba(255, 255, 255, 0.2);
             `;
             
             const playerArea = document.querySelector('.bpx-player-video-area') || 
