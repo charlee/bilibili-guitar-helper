@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.7
+// @version      0.8
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -46,11 +46,15 @@
                 if (titleText) titleText.style.display = 'none';
                 toggleBtn.innerText = '+';
                 container.style.width = 'auto';
+                container.style.opacity = '0.1';
+                container.style.backdropFilter = 'none';
             } else {
                 content.style.display = 'flex';
                 if (titleText) titleText.style.display = 'inline';
                 toggleBtn.innerText = '−';
                 container.style.width = '240px';
+                container.style.opacity = '1';
+                container.style.backdropFilter = 'blur(4px)';
             }
         },
 
@@ -190,7 +194,7 @@
             flex-direction: column;
             padding: 10px;
             background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+            backdrop-filter: ${state.isMinimized ? 'none' : 'blur(4px)'};
             color: white;
             font-size: 12px;
             border-radius: 8px;
@@ -198,7 +202,8 @@
             pointer-events: auto;
             border: 1px solid rgba(255, 255, 255, 0.2);
             width: ${state.isMinimized ? 'auto' : '240px'};
-            transition: width 0.2s ease;
+            opacity: ${state.isMinimized ? '0.1' : '1'};
+            transition: all 0.3s ease;
         `;
 
         container.innerHTML = `
@@ -245,6 +250,20 @@
         }
 
         // Basic Event Listeners
+        container.onmouseenter = () => {
+            if (state.isMinimized) {
+                container.style.opacity = '1';
+                container.style.backdropFilter = 'blur(4px)';
+            }
+        };
+
+        container.onmouseleave = () => {
+            if (state.isMinimized) {
+                container.style.opacity = '0.1';
+                container.style.backdropFilter = 'none';
+            }
+        };
+
         document.getElementById('gh-minimize-btn').onclick = () => {
             Features.toggleMinimize();
             const header = document.getElementById('gh-minimize-btn').parentElement;
