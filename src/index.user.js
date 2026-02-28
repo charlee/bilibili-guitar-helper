@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
-// @author       Charlee Li
+// @author       Your Name
 // @match        *://*.bilibili.com/video/*
 // @match        *://*.bilibili.com/bangumi/play/*
+// @updateURL    https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js
+// @downloadURL  https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js
 // @grant        none
 // ==/UserScript==
 
