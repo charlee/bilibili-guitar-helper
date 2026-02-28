@@ -96,8 +96,8 @@
             state.isCountingDown = true;
             state.video.pause();
 
-            // Only seek if we are starting fresh (not already at the loop start from handleLoop)
-            if (!fromLoop) {
+            // Seek to start point only if looping is active and we're starting a new play session
+            if (!fromLoop && state.loopActive) {
                 state.video.currentTime = state.startTime || 0;
             }
 

@@ -12,7 +12,7 @@ A powerful userscript for Bilibili designed to assist guitarists and musicians i
 ### ⏳ Persistent Countdown Toggle
 - **Toggle Mode**: Use `c` or the UI button to toggle the countdown feature on/off.
 - **Auto-Trigger**: If enabled, the countdown triggers **every time** the video starts/resumes (e.g., pressing Space) or **loops back** to the start point.
-- **Auto-Seek**: Automatically **seeks to the loop start point** (or video start) before starting the countdown.
+- **Auto-Seek**: If **Loop is On**, the script automatically seeks to your loop start point before counting down. If **Loop is Off**, the countdown happens at the current position.
 
 ### 🐌 Precise Playback Speed
 - Adjust speed from **0.5x to 1.0x** in fine-grained **0.1 increments**.
