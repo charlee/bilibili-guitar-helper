@@ -48,8 +48,11 @@
         // 2. Change playback speed
         setPlaybackSpeed: function(speed) {
             if (state.video) {
-                state.video.playbackRate = speed;
-                state.playbackSpeed = speed;
+                const newSpeed = Math.min(1.0, Math.max(0.5, parseFloat(speed.toFixed(1))));
+                state.video.playbackRate = newSpeed;
+                state.playbackSpeed = newSpeed;
+                const display = document.getElementById('gh-speed-display');
+                if (display) display.innerText = newSpeed.toFixed(1) + 'x';
             }
         },
 
@@ -138,6 +141,14 @@
                 </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <span>Speed:</span>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <button id="gh-speed-down" title="Speed Down" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">-</button>
+                    <span id="gh-speed-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">1.0x</span>
+                    <button id="gh-speed-up" title="Speed Up" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">+</button>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <span>Countdown:</span>
                 <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Start</button>
             </div>
@@ -182,6 +193,14 @@
 
         document.getElementById('gh-countdown-btn').onclick = () => {
             Features.startCountdown();
+        };
+
+        document.getElementById('gh-speed-down').onclick = () => {
+            Features.setPlaybackSpeed(state.playbackSpeed - 0.1);
+        };
+
+        document.getElementById('gh-speed-up').onclick = () => {
+            Features.setPlaybackSpeed(state.playbackSpeed + 0.1);
         };
     }
 
