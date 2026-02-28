@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -18,8 +18,8 @@
     const state = {
         video: null,
         loopActive: false,
-        startTime: 0,
-        endTime: 0,
+        startTime: null,
+        endTime: null,
         playbackSpeed: 1.0,
         countdownSeconds: 3,
         countdownEnabled: false, // New toggle state
@@ -239,6 +239,15 @@
         };
 
         document.getElementById('gh-loop-btn').onclick = () => {
+            if (state.startTime === null || state.endTime === null) {
+                console.log('Bilibili Guitar Helper: Set loop start [ and end ] points first.');
+                return;
+            }
+            if (state.endTime <= state.startTime) {
+                console.log('Bilibili Guitar Helper: Loop end must be greater than start.');
+                return;
+            }
+
             state.loopActive = !state.loopActive;
             const btn = document.getElementById('gh-loop-btn');
             btn.innerText = state.loopActive ? 'On' : 'Off';
