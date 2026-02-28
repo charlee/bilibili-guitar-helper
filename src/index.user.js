@@ -223,10 +223,12 @@
                 if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
                 switch(e.key) {
-                    case '[':
+                    case 'i':
+                    case 'I':
                         document.getElementById('gh-loop-start').click();
                         break;
-                    case ']':
+                    case 'o':
+                    case 'O':
                         document.getElementById('gh-loop-end').click();
                         break;
                     case 'l':
