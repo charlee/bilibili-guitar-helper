@@ -1,20 +1,54 @@
 # Project: Bilibili Guitar Helper
 
 ## Description
-A userscript for Bilibili that provides video control features specifically designed to help musicians practice with video tutorials.
+A sophisticated userscript for Bilibili designed to assist musicians in practicing. It provides precise video control, a modern UI, and deep integration with the Bilibili player.
 
-## Core Features
-- **Segment Looping**: Loop a specific part of the video for focused practice.
-- **Playback Speed**: Control video playback speed for slow-motion practice.
-- **Countdown Timer**: A countdown before the video starts (or resumes) to allow the player to prepare.
+## Current State (v1.1)
+The project is a fully functional userscript that injects a draggable, collapsible overlay into the Bilibili video player.
 
-## Technical Details
-- **Platform**: Bilibili (bilibili.com)
-- **Technology**: Userscript (JavaScript / TypeScript)
-- **Target**: Musicians/Guitarists
+### Core Features
+- **Advanced Looping**: 
+  - Set start (`[`) and end (`]`) points with visual emerald green feedback and `MM:SS` timestamps.
+  - Persistent loop toggle (`L`).
+- **Preparation Countdown**:
+  - 3-second countdown before playback starts.
+  - **Auto-Seek**: If looping is on, seeks to the loop start point before counting down.
+  - **Apple-Style UI**: Large, blurred-background overlay in the video center.
+  - **Audio Feedback**: Programmatic "tick" and "go" sounds using the Web Audio API (toggleable via UI).
+- **Precise Speed Control**: 
+  - Adjust speed from 0.5x to 1.0x in 0.1 increments via buttons or `+/-` shortcuts.
+- **Stealth Mode (Minimized UI)**:
+  - Collapses to just a 🎸 emoji.
+  - **Opacity Transition**: 0.1 opacity when idle; fades to 1.0 on hover.
+  - **Right-Anchored**: Minimizes toward the top-right corner.
 
-## Future Tasks
-- [ ] Implement UI for setting start/end times for looping.
-- [ ] Add playback speed controls (finer control than Bilibili's default).
-- [ ] Implement a countdown timer before playback starts.
-- [ ] Support keyboard shortcuts for quick control.
+### Technical Implementation Details
+- **UI Architecture**:
+  - Pure Vanilla JS and CSS-in-JS.
+  - **Glassmorphism**: Uses `backdrop-filter: blur(4px)` and semi-transparent backgrounds.
+  - **Draggable**: Custom drag-and-drop implementation using the header as the handle.
+- **Persistence**: 
+  - Uses `localStorage` to save:
+    - UI Position (`gh-right`, `gh-top`).
+    - Minimized state (`gh-minimized`).
+- **Keyboard Shortcuts (Capture Phase)**:
+  - Uses the capture phase (`addEventListener(..., true)`) and `stopImmediatePropagation()` to hijack Bilibili's native shortcuts (`[` and `]`) for our own features.
+- **Bilibili Integration**: 
+  - Injects into `.bpx-player-video-area` to ensure visibility in fullscreen.
+  - Uses a polling `init` function to wait for the `<video>` element in the SPA environment.
+
+## Keyboard Shortcuts Summary
+- `[` : Set Loop Start
+- `]` : Set Loop End
+- `l` : Toggle Loop On/Off
+- `c` : Toggle Countdown On/Off
+- `-` : Playback Speed Down
+- `+` / `=` : Playback Speed Up
+
+## Development Guidelines
+- **Metadata**: Always keep `@version` in sync with changes.
+- **UI Integrity**: Maintain the right-anchored positioning logic when modifying the UI or drag system.
+- **Shortcuts**: Always use the capture phase when adding shortcuts to avoid Bilibili native conflicts.
+
+---
+*Generated and maintained by Gemini CLI.*
