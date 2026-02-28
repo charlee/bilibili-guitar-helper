@@ -43,8 +43,8 @@ A powerful userscript for Bilibili designed to assist guitarists and musicians i
 
 ### For Users
 1. Install a userscript manager like [Tampermonkey](https://www.tampermonkey.net/).
-2. Create a new script and paste the content of `src/index.user.js`.
-3. Save and refresh any Bilibili video page.
+2. **[Click here to Install the Script](https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js)**.
+3. Refresh any Bilibili video page.
 
 ### For Local Development
 1. Enable "Allow access to file URLs" in Tampermonkey's extension settings.
