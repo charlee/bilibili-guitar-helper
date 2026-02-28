@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -182,7 +182,7 @@
         container.innerHTML = `
             <div style="font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">🎸 Guitar Helper</div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <span>Loop:</span>
+                <span><u>L</u>oop:</span>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <button id="gh-loop-start" title="Set Loop Start" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">[</button>
                     <span id="gh-start-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
@@ -200,7 +200,7 @@
                 </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <span>Countdown:</span>
+                <span><u>C</u>ountdown:</span>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
                     <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
