@@ -2,6 +2,8 @@
 
 A powerful userscript for Bilibili designed to assist guitarists and musicians in practicing with video tutorials. It provides precise looping, slow-motion playback, and a preparation countdown.
 
+![Bilibili Guitar Helper Preview](img/preview.png)
+
 ## Features
 
 ### 🔄 Advanced Looping
