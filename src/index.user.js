@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
@@ -39,13 +39,16 @@
             const container = document.getElementById('guitar-helper-ui');
             const content = document.getElementById('gh-ui-content');
             const toggleBtn = document.getElementById('gh-minimize-btn');
+            const titleText = document.getElementById('gh-title-text');
             
             if (state.isMinimized) {
                 content.style.display = 'none';
+                if (titleText) titleText.style.display = 'none';
                 toggleBtn.innerText = '+';
                 container.style.width = 'auto';
             } else {
                 content.style.display = 'flex';
+                if (titleText) titleText.style.display = 'inline';
                 toggleBtn.innerText = '−';
                 container.style.width = '240px';
             }
@@ -200,7 +203,7 @@
 
         container.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${state.isMinimized ? '0' : '5px'}; border-bottom: ${state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)'}; padding-bottom: ${state.isMinimized ? '0' : '5px'}; gap: 10px;">
-                <span style="font-weight: bold; white-space: nowrap;">🎸 Guitar Helper</span>
+                <span style="font-weight: bold; white-space: nowrap;">🎸 <span id="gh-title-text" style="display: ${state.isMinimized ? 'none' : 'inline'};">Guitar Helper</span></span>
                 <button id="gh-minimize-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 5px;">${state.isMinimized ? '+' : '−'}</button>
             </div>
             <div id="gh-ui-content" style="display: ${state.isMinimized ? 'none' : 'flex'}; flex-direction: column; gap: 10px;">
