@@ -1,11 +1,12 @@
 // ==UserScript==
-// @name         Bilibili Guitar Helper
+// @name         Bilibili & YouTube Guitar Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Loop specified segment, change playback speed, and count down before play on Bilibili.
+// @version      1.3
+// @description  Loop specified segment, change playback speed, and count down before play on Bilibili and YouTube.
 // @author       Charlee Li
 // @match        *://*.bilibili.com/video/*
 // @match        *://*.bilibili.com/bangumi/play/*
+// @match        *://*.youtube.com/watch*
 // @updateURL    https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js
 // @downloadURL  https://github.com/charlee/bilibili-guitar-helper/raw/refs/heads/master/src/index.user.js
 // @grant        none
@@ -42,10 +43,16 @@
             const content = document.getElementById('gh-ui-content');
             const toggleBtn = document.getElementById('gh-minimize-btn');
             const titleText = document.getElementById('gh-title-text');
+            const header = document.getElementById('gh-header');
             
             if (state.isMinimized) {
                 content.style.display = 'none';
                 if (titleText) titleText.style.display = 'none';
+                if (header) {
+                    header.style.marginBottom = '0';
+                    header.style.borderBottom = 'none';
+                    header.style.paddingBottom = '0';
+                }
                 toggleBtn.innerText = '+';
                 container.style.width = 'auto';
                 container.style.opacity = '0.1';
@@ -53,6 +60,11 @@
             } else {
                 content.style.display = 'flex';
                 if (titleText) titleText.style.display = 'inline';
+                if (header) {
+                    header.style.marginBottom = '5px';
+                    header.style.borderBottom = '1px solid rgba(255,255,255,0.3)';
+                    header.style.paddingBottom = '5px';
+                }
                 toggleBtn.innerText = '−';
                 container.style.width = '240px';
                 container.style.opacity = '1';
@@ -131,31 +143,33 @@
             // Create countdown overlay
             const overlay = document.createElement('div');
             overlay.id = 'gh-countdown-overlay';
-            overlay.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 200px;
-                height: 200px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: rgba(0, 0, 0, 0.4);
-                backdrop-filter: blur(10px);
-                border-radius: 40px;
-                font-size: 140px;
-                font-weight: bold;
-                color: white;
-                z-index: 1000000;
-                pointer-events: none;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            `;
+            Object.assign(overlay.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '200px',
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '40px',
+                fontSize: '140px',
+                fontWeight: 'bold',
+                color: 'white',
+                zIndex: '1000000',
+                pointerEvents: 'none',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+            });
 
             const playerArea = document.querySelector('.bpx-player-video-area') ||
                 document.querySelector('.bpx-player-container') ||
-                document.querySelector('#bilibili-player');
+                document.querySelector('#bilibili-player') ||
+                document.querySelector('#movie_player') ||
+                document.querySelector('.html5-video-player');
             if (playerArea) playerArea.appendChild(overlay);
 
             let remaining = state.countdownSeconds;
@@ -191,74 +205,192 @@
         
         // Initial positioning (using right-anchor for better minimize behavior)
         const initialPos = state.right && state.top ? 
-            `right: ${state.right}; top: ${state.top}; left: auto;` : 
-            `top: 20px; right: 20px;`;
+            { right: state.right, top: state.top, left: 'auto' } : 
+            { top: '20px', right: '20px' };
 
-        container.style.cssText = `
-            position: absolute;
-            ${initialPos}
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: ${state.isMinimized ? 'none' : 'blur(4px)'};
-            color: white;
-            font-size: 12px;
-            border-radius: 8px;
-            z-index: 999999;
-            pointer-events: auto;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: ${state.isMinimized ? 'auto' : '240px'};
-            opacity: ${state.isMinimized ? '0.1' : '1'};
-            transition: opacity 0.3s ease, backdrop-filter 0.3s ease, width 0.3s ease;
-            user-select: none;
-        `;
+        Object.assign(container.style, {
+            position: 'absolute',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '10px',
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: state.isMinimized ? 'none' : 'blur(4px)',
+            color: 'white',
+            fontSize: '12px',
+            borderRadius: '8px',
+            zIndex: '999999',
+            pointerEvents: 'auto',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            width: state.isMinimized ? 'auto' : '240px',
+            opacity: state.isMinimized ? '0.1' : '1',
+            transition: 'opacity 0.3s ease, backdropFilter 0.3s ease, width 0.3s ease',
+            userSelect: 'none'
+        });
+        
+        // Apply individual position properties
+        for (const [key, value] of Object.entries(initialPos)) {
+            container.style[key] = value;
+        }
 
-        container.innerHTML = `
-            <div id="gh-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${state.isMinimized ? '0' : '5px'}; border-bottom: ${state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)'}; padding-bottom: ${state.isMinimized ? '0' : '5px'}; gap: 10px; cursor: move;">
-                <span style="font-weight: bold; white-space: nowrap; pointer-events: none;">🎸 <span id="gh-title-text" style="display: ${state.isMinimized ? 'none' : 'inline'};">Guitar Helper</span></span>
-                <button id="gh-minimize-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 5px; pointer-events: auto;">${state.isMinimized ? '+' : '−'}</button>
-            </div>
-            <div id="gh-ui-content" style="display: ${state.isMinimized ? 'none' : 'flex'}; flex-direction: column; gap: 10px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                    <span><u>L</u>oop:</span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button id="gh-loop-start" title="Set Loop Start" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">[</button>
-                        <span id="gh-start-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
-                        <button id="gh-loop-end" title="Set Loop End" style="padding: 2px 6px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">]</button>
-                        <span id="gh-end-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">--:--</span>
-                        <button id="gh-loop-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                    <span>Speed:</span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button id="gh-speed-down" title="Speed Down" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">-</button>
-                        <span id="gh-speed-display" style="min-width: 35px; text-align: center; opacity: 0.8; font-family: monospace;">1.0x</span>
-                        <button id="gh-speed-up" title="Speed Up" style="padding: 2px 8px; cursor: pointer; background: #444; border: none; border-radius: 4px; color: white;">+</button>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                    <span><u>C</u>ountdown:</span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button id="gh-sound-toggle" title="Toggle Sound" style="padding: 2px 6px; cursor: pointer; background: #50c878; border: none; border-radius: 4px; color: white; width: 28px;">🔊</button>
-                        <button id="gh-countdown-btn" style="padding: 2px 8px; cursor: pointer; background: #00a1d6; border: none; border-radius: 4px; color: white;">Off</button>
-                    </div>
-                </div>
-            </div>
-        `;
+        // --- Header Section ---
+        const header = document.createElement('div');
+        header.id = 'gh-header';
+        Object.assign(header.style, {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: state.isMinimized ? '0' : '5px',
+            borderBottom: state.isMinimized ? 'none' : '1px solid rgba(255,255,255,0.3)',
+            paddingBottom: state.isMinimized ? '0' : '5px',
+            gap: '10px',
+            cursor: 'move'
+        });
+
+        const titleSpan = document.createElement('span');
+        titleSpan.style.fontWeight = 'bold';
+        titleSpan.style.whiteSpace = 'nowrap';
+        titleSpan.style.pointerEvents = 'none';
+        titleSpan.textContent = '🎸 ';
+
+        const titleText = document.createElement('span');
+        titleText.id = 'gh-title-text';
+        titleText.style.display = state.isMinimized ? 'none' : 'inline';
+        titleText.textContent = 'Guitar Helper';
+        titleSpan.appendChild(titleText);
+
+        const minimizeBtn = document.createElement('button');
+        minimizeBtn.id = 'gh-minimize-btn';
+        minimizeBtn.textContent = state.isMinimized ? '+' : '−';
+        Object.assign(minimizeBtn.style, {
+            background: 'none',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: '16px',
+            lineHeight: '1',
+            padding: '0 5px',
+            pointerEvents: 'auto'
+        });
+
+        header.appendChild(titleSpan);
+        header.appendChild(minimizeBtn);
+        container.appendChild(header);
+
+        // --- Content Section ---
+        const content = document.createElement('div');
+        content.id = 'gh-ui-content';
+        Object.assign(content.style, {
+            display: state.isMinimized ? 'none' : 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+        });
+
+        // Loop Row
+        const loopRow = document.createElement('div');
+        Object.assign(loopRow.style, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' });
+        
+        const loopLabel = document.createElement('span');
+        const loopU = document.createElement('u');
+        loopU.textContent = 'L';
+        loopLabel.appendChild(loopU);
+        loopLabel.appendChild(document.createTextNode('oop:'));
+        
+        const loopControls = document.createElement('div');
+        Object.assign(loopControls.style, { display: 'flex', alignItems: 'center', gap: '4px' });
+
+        const createBtn = (id, text, title, bg = '#444') => {
+            const b = document.createElement('button');
+            b.id = id;
+            b.textContent = text;
+            b.title = title;
+            Object.assign(b.style, { padding: '2px 6px', cursor: 'pointer', background: bg, border: 'none', borderRadius: '4px', color: 'white' });
+            return b;
+        };
+
+        const createDisplay = (id) => {
+            const s = document.createElement('span');
+            s.id = id;
+            s.textContent = '--:--';
+            Object.assign(s.style, { minWidth: '35px', textAlign: 'center', opacity: '0.8', fontFamily: 'monospace' });
+            return s;
+        };
+
+        const btnStart = createBtn('gh-loop-start', '[', 'Set Loop Start');
+        const displayStart = createDisplay('gh-start-display');
+        const btnEnd = createBtn('gh-loop-end', ']', 'Set Loop End');
+        const displayEnd = createDisplay('gh-end-display');
+        const btnToggle = createBtn('gh-loop-btn', 'Off', 'Toggle Loop', '#00a1d6');
+        btnToggle.style.padding = '2px 8px';
+
+        loopControls.appendChild(btnStart);
+        loopControls.appendChild(displayStart);
+        loopControls.appendChild(btnEnd);
+        loopControls.appendChild(displayEnd);
+        loopControls.appendChild(btnToggle);
+        loopRow.appendChild(loopLabel);
+        loopRow.appendChild(loopControls);
+        content.appendChild(loopRow);
+
+        // Speed Row
+        const speedRow = document.createElement('div');
+        Object.assign(speedRow.style, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' });
+        const speedLabel = document.createElement('span');
+        speedLabel.textContent = 'Speed:';
+        speedRow.appendChild(speedLabel);
+        
+        const speedControls = document.createElement('div');
+        Object.assign(speedControls.style, { display: 'flex', alignItems: 'center', gap: '4px' });
+        
+        const btnSpeedDown = createBtn('gh-speed-down', '-', 'Speed Down');
+        btnSpeedDown.style.padding = '2px 8px';
+        const displaySpeed = createDisplay('gh-speed-display');
+        displaySpeed.textContent = '1.0x';
+        const btnSpeedUp = createBtn('gh-speed-up', '+', 'Speed Up');
+        btnSpeedUp.style.padding = '2px 8px';
+
+        speedControls.appendChild(btnSpeedDown);
+        speedControls.appendChild(displaySpeed);
+        speedControls.appendChild(btnSpeedUp);
+        speedRow.appendChild(speedControls);
+        content.appendChild(speedRow);
+
+        // Countdown Row
+        const countdownRow = document.createElement('div');
+        Object.assign(countdownRow.style, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' });
+        const cdLabel = document.createElement('span');
+        const cdU = document.createElement('u');
+        cdU.textContent = 'C';
+        cdLabel.appendChild(cdU);
+        cdLabel.appendChild(document.createTextNode('ountdown:'));
+        
+        const cdControls = document.createElement('div');
+        Object.assign(cdControls.style, { display: 'flex', alignItems: 'center', gap: '4px' });
+
+        const btnSound = createBtn('gh-sound-toggle', '🔊', 'Toggle Sound', '#50c878');
+        btnSound.style.width = '28px';
+        const btnCdToggle = createBtn('gh-countdown-btn', 'Off', 'Toggle Countdown', '#00a1d6');
+        btnCdToggle.style.padding = '2px 8px';
+
+        cdControls.appendChild(btnSound);
+        cdControls.appendChild(btnCdToggle);
+        countdownRow.appendChild(cdLabel);
+        countdownRow.appendChild(cdControls);
+        content.appendChild(countdownRow);
+
+        container.appendChild(content);
 
         // Append to the video area to ensure visibility in fullscreen
         const playerArea = document.querySelector('.bpx-player-video-area') ||
             document.querySelector('.bpx-player-container') ||
-            document.querySelector('#bilibili-player');
+            document.querySelector('#bilibili-player') ||
+            document.querySelector('#movie_player') ||
+            document.querySelector('.html5-video-player');
 
         if (playerArea) {
             playerArea.appendChild(container);
         }
 
-        // Basic Event Listeners
-        const header = document.getElementById('gh-header');
+        // --- Basic Event Listeners ---
         let isDragging = false;
         let startX, startY, initialRight, initialTop;
 
@@ -312,16 +444,6 @@
 
         document.getElementById('gh-minimize-btn').onclick = () => {
             Features.toggleMinimize();
-            const header = document.getElementById('gh-minimize-btn').parentElement;
-            if (state.isMinimized) {
-                header.style.marginBottom = '0';
-                header.style.borderBottom = 'none';
-                header.style.paddingBottom = '0';
-            } else {
-                header.style.marginBottom = '5px';
-                header.style.borderBottom = '1px solid rgba(255,255,255,0.3)';
-                header.style.paddingBottom = '5px';
-            }
         };
 
         document.getElementById('gh-loop-start').onclick = () => {

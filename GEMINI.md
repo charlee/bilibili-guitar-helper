@@ -1,10 +1,10 @@
-# Project: Bilibili Guitar Helper
+# Project: Bilibili & YouTube Guitar Helper
 
 ## Description
-A sophisticated userscript for Bilibili designed to assist musicians in practicing. It provides precise video control, a modern UI, and deep integration with the Bilibili player.
+A sophisticated userscript for Bilibili and YouTube designed to assist musicians in practicing. It provides precise video control, a modern UI, and deep integration with video players.
 
-## Current State (v1.1)
-The project is a fully functional userscript that injects a draggable, collapsible overlay into the Bilibili video player.
+## Current State (v1.2)
+The project is a fully functional userscript that injects a draggable, collapsible overlay into Bilibili and YouTube video players.
 
 ### Core Features
 - **Advanced Looping**: 
@@ -32,10 +32,10 @@ The project is a fully functional userscript that injects a draggable, collapsib
     - UI Position (`gh-right`, `gh-top`).
     - Minimized state (`gh-minimized`).
 - **Keyboard Shortcuts (Capture Phase)**:
-  - Uses the capture phase (`addEventListener(..., true)`) and `stopImmediatePropagation()` to hijack Bilibili's native shortcuts (`[` and `]`) for our own features.
-- **Bilibili Integration**: 
-  - Injects into `.bpx-player-video-area` to ensure visibility in fullscreen.
-  - Uses a polling `init` function to wait for the `<video>` element in the SPA environment.
+  - Uses the capture phase (`addEventListener(..., true)`) and `stopImmediatePropagation()` to hijack native shortcuts (like Bilibili's `[` and `]`) for our own features.
+- **Platform Integration**: 
+  - Injects into `.bpx-player-video-area`, `#movie_player`, or `.html5-video-player` to ensure visibility in fullscreen.
+  - Uses a polling `init` function to wait for the `<video>` element in SPA environments (Bilibili/YouTube).
 
 ## Keyboard Shortcuts Summary
 - `[` : Set Loop Start
@@ -48,7 +48,7 @@ The project is a fully functional userscript that injects a draggable, collapsib
 ## Development Guidelines
 - **Metadata**: Always keep `@version` in sync with changes.
 - **UI Integrity**: Maintain the right-anchored positioning logic when modifying the UI or drag system.
-- **Shortcuts**: Always use the capture phase when adding shortcuts to avoid Bilibili native conflicts.
+- **Shortcuts**: Always use the capture phase when adding shortcuts to avoid platform native conflicts.
 
 ---
 *Generated and maintained by Gemini CLI.*
